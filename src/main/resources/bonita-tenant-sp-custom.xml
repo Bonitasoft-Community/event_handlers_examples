@@ -1,0 +1,34 @@
+<!--
+File to put under setup/platform-conf/current/tenants/1/tenant-engine
+
+-->
+
+
+
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
+
+
+
+    <bean id="TransientTaskDataHandler" class="org.bonitasoft.handler.TransientTaskDataHandler">
+        <constructor-arg name="tenantId" value="${tenantId}" />
+        <constructor-arg name="transientDataName" value="status" />
+    </bean>
+
+    <bean id="UserAssignedHandler" class="org.bonitasoft.handler.UserAssignedHandler">
+        <constructor-arg name="tenantId" value="${tenantId}" />
+    </bean>
+
+    <bean id="eventHandlers" class="org.springframework.beans.factory.config.MapFactoryBean">
+        <property name="targetMapClass">
+            <value>java.util.HashMap</value>
+        </property>
+        <property name="sourceMap">
+            <map>
+                <entry key="ACTIVITYINSTANCE_STATE_UPDATED" value-ref="TransientTaskDataHandler"/>
+                <entry key="HUMAN_TASK_INSTANCE_ASSIGNEE_UPDATED" value-ref="UserAssignedHandler"/>
+            </map>
+        </property>
+    </bean>
+
+</beans>
