@@ -35,7 +35,7 @@ import java.util.logging.Logger;
 
 
 public class TransientTaskDataHandler implements SHandler {
-    Logger logger = Logger.getLogger("org.bonitasoft");
+    Logger logger = Logger.getLogger("org.bonitasoft.handlers");
     public long tenantId;
     public String transientDataName;
     private transient ProcessExecutor processExecutor;
@@ -48,28 +48,27 @@ public class TransientTaskDataHandler implements SHandler {
     public void execute(SEvent event) throws SHandlerExecutionException{
         initializeTenantServices(tenantId);
         SDataInstance sDataInstance;
-        //try {
-            Object eventObject = event.getObject();
-            if (eventObject instanceof SUserTaskInstance) {
-                SUserTaskInstance taskInstance = (SUserTaskInstance) eventObject;
-                //logger.info(String.format("******* Event fired: %s - %s", this.getClass().getName(), taskInstance.getStateName()));
-                // Check if it's a task instantiation
-                if (taskInstance.getStateName().equalsIgnoreCase("ready") && taskInstance.getAssigneeId()==0L){
-                    logger.info("****Event handler: A new task is available without assigned********** " + taskInstance.getStateName());
-                }
-                else {
-                    try {
-                        sDataInstance = transientDataInstanceService.getDataInstance("status", taskInstance.getId(), DataInstanceContainer.ACTIVITY_INSTANCE.toString());
-                        if (sDataInstance != null) {
-                            if (taskInstance.getStateName().equalsIgnoreCase("completed"))
-                                logger.info("****Event handler: Task executed  Value of status variable: ********** " + sDataInstance.getValue());
-                        }
-                    } catch (SDataInstanceException e) {
-                        // It's possible that the human task doesn't have any status variable, so we don't treat the exception
-                    }
-                }
-
+        Object eventObject = event.getObject();
+        //We should always get into the if because we are dealing with "ACTIVITYINSTANCE_STATE_UPDATED"
+        if (eventObject instanceof SUserTaskInstance) {
+            SUserTaskInstance taskInstance = (SUserTaskInstance) eventObject;
+            // Check if it's a task instantiation
+            if (taskInstance.getStateName().equalsIgnoreCase("ready") && taskInstance.getAssigneeId()==0L){
+                logger.info(String.format("****Event handler %s: A new task %s - id:%s is available without assigned ********** ", this.getClass().getName(), taskInstance.getDisplayName(), taskInstance.getId()));
             }
+            else {
+                try {
+                    sDataInstance = transientDataInstanceService.getDataInstance("status", taskInstance.getId(), DataInstanceContainer.ACTIVITY_INSTANCE.toString());
+                    if (sDataInstance != null) {
+                        if (taskInstance.getStateName().equalsIgnoreCase("completed"))
+                            logger.info(String.format("****Event handler %s: Human task %s - id:%s executed.  Value of %s variable: %s ********** ", this.getClass().getName(), taskInstance.getDisplayName(), taskInstance.getId(), transientDataName ,sDataInstance.getValue()));
+                    }
+                } catch (SDataInstanceException e) {
+                    // It's possible that the human task doesn't have any status variable, so we don't treat the exception
+                }
+            }
+
+        }
     }
     private void initializeTenantServices(long tenantId) throws SHandlerExecutionException{
         TenantServiceAccessor tenantServiceAccessor = getTenantServiceAccessor(tenantId);
@@ -86,17 +85,8 @@ public class TransientTaskDataHandler implements SHandler {
         }
     }
     public boolean isInterested(SEvent event){
-        //boolean isInterested = false;
-
-           //isInterested = (activityInstance.getName().equalsIgnoreCase("Task eventHandler"));
-        /*
-        Object eventObject = event.getObject();
-        if (eventObject instanceof SUserTaskInstance) {
-            SUserTaskInstance taskInstance = (SUserTaskInstance) eventObject;
-            isInterested = (taskInstance.getStateName().equalsIgnoreCase("ready") && taskInstance.getAssigneeId()!=0L);
-        }
-
-         */
+        //We want to deal with all the events of type ACTIVITYINSTANCE_STATE_UPDATED.
+        // Since this filter is already set in the bonita-tenant-sp-custom.xml we can just return true
         return true;
     }
 

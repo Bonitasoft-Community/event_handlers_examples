@@ -29,7 +29,7 @@ import java.util.logging.Logger;
 
 
 public class UserAssignedHandler implements SHandler {
-    Logger logger = Logger.getLogger("org.bonitasoft");
+    Logger logger = Logger.getLogger("org.bonitasoft.handlers");
     public long tenantId;
     private transient ProcessExecutor processExecutor;
     private transient TransientDataService transientDataInstanceService;
@@ -43,7 +43,7 @@ public class UserAssignedHandler implements SHandler {
         Object eventObject = event.getObject();
         if (eventObject instanceof SUserTaskInstance) {
             SUserTaskInstance taskInstance = (SUserTaskInstance) eventObject;
-            logger.info(String.format("******* Event fired: %s - %s", this.getClass().getName(), taskInstance.getStateName()));
+            logger.info(String.format("******* Event handler %s fired. The task: %s id:%s is now assigned to user: %s", this.getClass().getName(), taskInstance.getDisplayName(),taskInstance.getId(), taskInstance.getAssigneeId()));
         }
 
     }
