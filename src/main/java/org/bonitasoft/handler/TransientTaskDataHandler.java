@@ -67,7 +67,6 @@ public class TransientTaskDataHandler implements SHandler {
                     // It's possible that the human task doesn't have any status variable, so we don't treat the exception
                 }
             }
-
         }
     }
     private void initializeTenantServices(long tenantId) throws SHandlerExecutionException{
